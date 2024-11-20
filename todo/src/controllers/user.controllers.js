@@ -20,7 +20,7 @@ const registerUser = asyncHandler(async (req, res) => {
 //return response
 
 const {fullname,username,email,password} = req.body
-console.log(fullname,email,password);
+// console.log(fullname,email,password);
 
 // if(fullname === ""){
 //     throw new ApiError(400,"fullname is required");
@@ -33,7 +33,7 @@ throw new ApiError("400", "All fields are required")
 }
 
 
-const exitedUser = User.findOne({
+const exitedUser =await User.findOne({
     $or: [{username}, {email}]
 })
 
@@ -43,15 +43,24 @@ if(exitedUser){
 }
 
 const avatatLocalPath = req.files?.avatar[0]?.path;
-const coverimageLocalpath = req.files?.userImage[0]?.path;
-console.log(avatatLocalPath);
+// const coverimageLocalpath = req.files?.coverimage[0]?.path;
+// console.log(avatatLocalPath);
 
-if(avatatLocalPath){
+
+let coverimageLocalpath;
+if(req.files && Array.isArray(req.files.coverimage) && req.files.coverimage.length > 0){
+ coverimageLocalpath = req.files.coverimage[0].path;
+
+} 
+
+if(!avatatLocalPath){
     throw new ApiError(400, "Avatar file is required")
 }
 
  const avatar = await uploadonCloudinary(avatatLocalPath)
  const coverImage = await uploadonCloudinary(coverimageLocalpath)
+//  console.log(avatar);
+ 
 
  if(!avatar){
     throw new ApiError(400, "Avatar file is required")
@@ -61,7 +70,7 @@ if(avatatLocalPath){
   const user = await User.create({
     fullname,
     avatar:avatar.url,
-    coverImage: coverImage?.url || "",
+    coverimage: coverImage?.url || "",
     email,
     password,
     username: username.toLowerCase(),

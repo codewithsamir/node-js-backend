@@ -4,15 +4,16 @@ import fs from 'fs'
 
     // Configuration
     cloudinary.config({ 
-        cloud_name: process.env.CLOUDINARY_NAME, 
-        api_key: process.env.CLOUDINARY_API_KEY, 
-        api_secret: process.env.CLOUDINARY_API_SECRET // Click 'View API Keys' above to copy your API secret
+        cloud_name: String(process.env.CLOUDINARY_NAME), 
+        api_key: String(process.env.CLOUDINARY_API_KEY), 
+        api_secret:String(process.env.CLOUDINARY_API_SECRET) // Click 'View API Keys' above to copy your API secret
     });
     
     // Upload an image
 
 
 const uploadonCloudinary = async (localfilepath)=>{
+    
     try {
         if(!localfilepath) return null;
 
@@ -20,11 +21,13 @@ const uploadonCloudinary = async (localfilepath)=>{
             resource_type:"auto"
         })
         //file has been uploded successfully
-        console.log("file is uploaded on cloudinary",response.url);
+        // console.log("file is uploaded on cloudinary",response.url);
+        fs.unlinkSync(localfilepath)
         return response;
         
     } catch (error) {
         fs.unlinkSync(localfilepath) // remove the locally saved temporary file as the upload operation got failed
+     
         return null;
     }
 }
