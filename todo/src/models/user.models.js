@@ -1,6 +1,6 @@
 import mongoose,{Schema} from 'mongoose'
-import jwt from 'jsonwebtoken'
-import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'  //jsonwebtoken
+import bcrypt from 'bcrypt'   //for security of password 
 
 
 const userSchema =new Schema({
@@ -53,7 +53,7 @@ refreshToken:{
 
 },{timestamps:true})
 
-
+//use normal function because it have this keyword access
 userSchema.pre("save", async function(next){
     if(!this.isModified("password")) return next();
     this.password = bcrypt.hash(this.password, 10)
