@@ -56,7 +56,7 @@ refreshToken:{
 //use normal function because it have this keyword access
 userSchema.pre("save", async function(next){
     if(!this.isModified("password")) return next();
-    this.password = bcrypt.hash(this.password, 10)
+    this.password = await bcrypt.hash(this.password, 10)
     next()
 })
 
