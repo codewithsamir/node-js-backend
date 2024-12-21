@@ -9,7 +9,7 @@ content:{
     required:true,
 
 },
-video:{
+videoId:{
     type:Schema.Types.ObjectId,
     ref:"Video",
 
