@@ -5,6 +5,7 @@ import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
+import { uploadonCloudinary } from "../utility/cloudinary.js"
 
 
 
@@ -60,9 +61,52 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
 
 const publishAVideo = asyncHandler(async (req, res) => {
-    const { title, description} = req.body
-    // TODO: get video, upload to cloudinary, create video
-})
+    // If 'user' is part of the request body, use req.body.user. If it's in params, req.params.user is correct.    const { user } = req.params; // Ensure you're passing the user correctly through the route
+    const { title, descriptions,user } = req.body;
+
+    // Check if all required fields are provided
+    if (!title || !descriptions || user) {
+        throw new ApiError(400, "All fields are required");
+    }
+
+    // Get video and thumbnail file paths
+    const videoLocalPath = req.files?.videofile[0]?.path;
+    const thumbnailLocalPath = req.files?.thumbnail[0]?.path; // Corrected spelling here
+
+    if (!videoLocalPath || !thumbnailLocalPath) {
+        throw new ApiError(400, "Video and thumbnail are required");
+    }
+
+    // Upload video and thumbnail to Cloudinary
+    const video = await uploadonCloudinary(videoLocalPath);
+    const thumbnail = await uploadonCloudinary(thumbnailLocalPath);
+
+    // Check if video upload is successful
+    if (!video) {
+        throw new ApiError(402, "Video is not uploaded");
+    }
+
+    // Create the video record in the database
+    const publicVideo = await Video.create({
+        videofile: video.url,
+        thumbnail: thumbnail.url, // Corrected spelling here
+        title,
+        descriptions,
+        duration: video.duration, // Consider using ffmpeg or another method if duration is not available
+        owner: user,
+    });
+
+    // Check if the video creation failed
+    if (!publicVideo) {
+        throw new ApiError(402, "Video could not be uploaded, try again");
+    }
+
+    // Return the successful response
+    return res.status(201).json(
+        new ApiResponse(201, publicVideo, "Successfully published video")
+    );
+});
+
 
 const getVideoById = asyncHandler(async (req, res) => {
     const { videoId } = req.params
