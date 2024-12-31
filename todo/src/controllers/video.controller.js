@@ -6,6 +6,7 @@ import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { uploadonCloudinary } from "../utility/cloudinary.js"
+import { json } from "stream/consumers"
 
 
 
@@ -134,7 +135,7 @@ const getVideoById = asyncHandler(async (req, res) => {
 const updateVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     //TODO: update video details like title, description, thumbnail
-    const {title,descriptions,thumbnail}= req.body;
+    const {title,descriptions}= req.body;
     const thumbnailpath = req.files?.path;
 
     if(!thumbnailpath){
@@ -171,12 +172,36 @@ const updateVideo = asyncHandler(async (req, res) => {
 })
 
 const deleteVideo = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
-    //TODO: delete video
-})
+    const { videoId } = req.params;
+
+    // Check if videoId is provided
+    if (!videoId) {
+        throw new ApiError(400, "Video ID is required");
+    }
+
+    // Attempt to delete the video
+    const deletedvideo = await Video.findByIdAndDelete(videoId);
+
+    // Check if the video was successfully deleted
+    if (!deletedvideo) {
+        throw new ApiError(400, "Video could not be deleted or does not exist");
+    }
+
+    // Return a success response
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, deletedvideo, "Successfully deleted video")
+        );
+});
+
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
     const { videoId } = req.params
+
+    if(!videoId){
+        throw new ApiError(400,"video id is required")
+    }
 })
 
 export {
