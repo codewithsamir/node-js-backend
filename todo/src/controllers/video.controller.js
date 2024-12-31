@@ -15,7 +15,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     //TODO: get all videos based on query, sort, pagination
     // Check if userId is provided
     if (!userId) {
-        throw new ApiError(404, 'UserId is required');
+        throw new ApiError(404, 'UserId is required');                 
     }
 
     // Calculate pagination values
@@ -109,13 +109,64 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
 
 const getVideoById = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
-    //TODO: get video by id
-})
+    const { videoId } = req.params;
+
+    // Check if videoId is provided
+    if (!videoId) {
+        throw new ApiError(400, "Video ID is required.");
+    }
+
+    // Fetch video by ID
+    const video = await Video.findById(videoId);
+
+    // Check if video exists
+    if (!video) {
+        throw new ApiError(404, "Video is not available.");
+    }
+
+    // Return the video in the response
+    return res.status(200).json(
+        new ApiResponse(200, video, "Video found successfully.")
+    );
+});
+
 
 const updateVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     //TODO: update video details like title, description, thumbnail
+    const {title,descriptions,thumbnail}= req.body;
+    const thumbnailpath = req.files?.path;
+
+    if(!thumbnailpath){
+        throw new ApiError(400, "thumbail is missing");
+    }
+    const thumbailurl = await uploadOnCloudinary(thumbnailpath)
+
+    if(!videoId){
+        throw new ApiError(400,"Video Id is required!");
+    }
+
+
+
+    const video = await Video.findByIdAndUpdate(videoId,{
+        $set:{
+            title,
+            descriptions,
+            thumbnail:thumbailurl.url
+        }
+    });
+
+    if(!video){
+        throw new ApiError(400,"Video is not avaiable!");
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,"Successfully update data")
+    )
+
+
 
 })
 
